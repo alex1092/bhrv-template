@@ -39,3 +39,12 @@ pnpm-debug.log*
 
 # Bun
 bun.lockb
+
+# TypeScript
+*.tsbuildinfo
+
+# Cloudflare Workers
+.wrangler/
+
+# AI/Planning files
+ai_plans/
