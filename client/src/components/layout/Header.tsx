@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { User, LogOut, Menu, X } from "lucide-react"
+import { LogOut, Menu, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

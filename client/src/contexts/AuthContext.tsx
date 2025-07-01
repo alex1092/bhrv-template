@@ -42,7 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const { data } = await authClient.getSession()
         return data
-      } catch (err) {
+      } catch (_err) {
         // If session fetch fails, user is not authenticated
         return null
       }
