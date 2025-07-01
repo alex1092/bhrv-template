@@ -5,13 +5,25 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "bun --watch run src/index.ts && tsc --watch"
+    "dev": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy --minify",
+    "deploy:quick": "wrangler deploy",
+    "deploy:secrets": "wrangler secret bulk .dev.vars",
+    "deploy:full": "npm run build && npm run deploy:secrets && wrangler deploy --minify",
+    "logs": "wrangler tail",
+    "status": "wrangler whoami && wrangler kv:namespace list",
+    "cf-gen-types": "wrangler types --env-interface CloudflareBindings",
+    "better-auth-gen-schema": "pnpm dlx @better-auth/cli@latest generate --config ./better-auth.config.ts --output ./src/db/schema.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
+    "better-auth": "^1.2.12",
+    "drizzle-orm": "^0.44.2",
     "hono": "^4.7.11",
     "shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.4"
   }
 }

@@ -18,6 +18,10 @@
     "build:client": "cd client && bun run build",
     "build:shared": "cd shared && bun run build",
     "build:server": "cd server && bun run build",
+    "cf-gen-types": "cd server && bun run cf-gen-types",
+    "better-auth-gen-schema": "cd server && bun run better-auth-gen-schema",
+    "deploy:server": "cd server && bun run deploy",
+    "deploy": "bun run cf-gen-types && bun run better-auth-gen-schema && bun run deploy:server",
     "build": "bun run build:shared && bun run build:server && bun run build:client",
     "postinstall": "bun run build:shared && bun run build:server"
   },
