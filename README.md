@@ -2,20 +2,25 @@
 
 ![cover](https://cdn.stevedylan.dev/ipfs/bafybeievx27ar5qfqyqyud7kemnb5n2p4rzt2matogi6qttwkpxonqhra4)
 
-A full-stack TypeScript monorepo starter with shared types, using Bun, Hono, Vite, and React
+A full-stack TypeScript monorepo starter with Better Auth authentication, using Bun, Hono, Cloudflare Workers, and React
 
-## Why bhvr?
-
-While there are plenty of existing app building stacks out there, many of them are either bloated, outdated, or have too much of a vendor lock-in. bhvr is built with the opinion that you should be able to deploy your client or server in any environment while also keeping type saftey.
+> **📝 Note**: This is a fork of the excellent [bhvr](https://github.com/stevedylandev/bhvr) template by [@stevedylandev](https://github.com/stevedylandev), enhanced with Better Auth authentication and Cloudflare Workers deployment.
 
 ## Features
 
-- **Full-Stack TypeScript**: End-to-end type safety between client and server
-- **Shared Types**: Common type definitions shared between client and server
-- **Monorepo Structure**: Organized as a workspaces-based monorepo
-- **Modern Stack**:
+- **🔐 Complete Authentication System**: Better Auth with email/password, session management, and database persistence
+- **☁️ Cloudflare Workers Ready**: Pre-configured for serverless deployment with Wrangler
+- **🗄️ Database Integration**: Drizzle ORM with Neon PostgreSQL for type-safe database operations
+- **🔗 Full-Stack TypeScript**: End-to-end type safety between client and server
+- **📦 Shared Types**: Common type definitions shared between client and server
+- **🏗️ Monorepo Structure**: Organized workspaces-based monorepo
+- **⚡ Modern Stack**:
   - [Bun](https://bun.sh) as the JavaScript runtime
   - [Hono](https://hono.dev) as the backend framework
+  - [Better Auth](https://www.better-auth.com) for authentication
+  - [Drizzle ORM](https://orm.drizzle.team) for database operations
+  - [Cloudflare Workers](https://workers.cloudflare.com) for serverless deployment
+  - [Neon](https://neon.tech) for PostgreSQL database
   - [Vite](https://vitejs.dev) for frontend bundling
   - [React](https://react.dev) for the frontend UI
 
@@ -24,226 +29,383 @@ While there are plenty of existing app building stacks out there, many of them a
 ```
 .
 ├── client/               # React frontend
-├── server/               # Hono backend
+├── server/               # Hono backend with Better Auth
+│   ├── src/
+│   │   ├── db/          # Database schema and migrations
+│   │   ├── lib/         # Better Auth configuration
+│   │   └── index.ts     # Main server entry point
+│   ├── drizzle/         # Database migration files
+│   ├── wrangler.jsonc   # Cloudflare Workers config
+│   └── .dev.vars        # Environment variables (local)
 ├── shared/               # Shared TypeScript definitions
-│   └── src/types/        # Type definitions used by both client and server
 └── package.json          # Root package.json with workspaces
-```
-
-### Server
-
-bhvr uses Hono as a backend API for it's simplicity and massive ecosystem of plugins. If you have ever used Express then it might feel familiar. Declaring routes and returning data is easy.
-
-```
-server
-├── bun.lock
-├── package.json
-├── README.md
-├── src
-│   └── index.ts
-└── tsconfig.json
-```
-
-```typescript src/index.ts
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import type { ApiResponse } from 'shared/dist'
-
-const app = new Hono()
-
-app.use(cors())
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
-app.get('/hello', async (c) => {
-
-  const data: ApiResponse = {
-    message: "Hello BHVR!",
-    success: true
-  }
-
-  return c.json(data, { status: 200 })
-})
-
-export default app
-```
-
-If you wanted to add a database to Hono you can do so with a multitude of Typescript libraries like [Supabase](https://supabase.com), or ORMs like [Drizzle](https://orm.drizzle.team/docs/get-started) or [Prisma](https://www.prisma.io/orm)
-
-### Client
-
-bhvr uses Vite + React Typescript template, which means you can build your frontend just as you would with any other React app. This makes it flexible to add UI components like [shadcn/ui](https://ui.shadcn.com) or routing using [React Router](https://reactrouter.com/start/declarative/installation).
-
-```
-client
-├── eslint.config.js
-├── index.html
-├── package.json
-├── public
-│   └── vite.svg
-├── README.md
-├── src
-│   ├── App.css
-│   ├── App.tsx
-│   ├── assets
-│   ├── index.css
-│   ├── main.tsx
-│   └── vite-env.d.ts
-├── tsconfig.app.json
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
-```
-
-```typescript src/App.tsx
-import { useState } from 'react'
-import beaver from './assets/beaver.svg'
-import { ApiResponse } from 'shared'
-import './App.css'
-
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"
-
-function App() {
-  const [data, setData] = useState<ApiResponse | undefined>()
-
-  async function sendRequest() {
-    try {
-      const req = await fetch(`${SERVER_URL}/hello`)
-      const res: ApiResponse = await req.json()
-      setData(res)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  return (
-    <>
-      <div>
-        <a href="https://github.com/stevedylandev/bhvr" target="_blank">
-          <img src={beaver} className="logo" alt="beaver logo" />
-        </a>
-      </div>
-      <h1>bhvr</h1>
-      <h2>Bun + Hono + Vite + React</h2>
-      <p>A typesafe fullstack monorepo</p>
-      <div className="card">
-        <button onClick={sendRequest}>
-          Call API
-        </button>
-        {data && (
-          <pre className='response'>
-            <code>
-            Message: {data.message} <br />
-            Success: {data.success.toString()}
-            </code>
-          </pre>
-        )}
-      </div>
-      <p className="read-the-docs">
-        Click the beaver to learn more
-      </p>
-    </>
-  )
-}
-
-export default App
-```
-
-### Shared
-
-The Shared package is used for anything you want to share between the Server and Client. This could be types or libraries that you use in both the enviorments.
-
-```
-shared
-├── package.json
-├── src
-│   ├── index.ts
-│   └── types
-│       └── index.ts
-└── tsconfig.json
-```
-
-Inside the `src/index.ts` we export any of our code from the folders so it's usabe in other parts of the monorepo
-
-```typescript
-export * from "./types"
-```
-
-By running `bun run dev` or `bun run build` it will compile and export the packages from `shared` so it can be used in either `client` or `server`
-
-```typescript
-import { ApiResponse } from 'shared'
 ```
 
 ## Getting Started
 
-### Quick Start
-
-You can start a new bhvr project using the [CLI](https://github.com/stevedylandev/create-bhvr)
+### 1. Clone and Install
 
 ```bash
-bun create bhvr
-```
+# Clone the repository
+git clone <your-repo-url>
+cd bhvr-template
 
-### Installation
-
-```bash
 # Install dependencies for all workspaces
 bun install
 ```
 
-### Development
+### 2. Environment Setup
+
+Create your environment variables file:
 
 ```bash
-# Run shared types in watch mode, server, and client all at once
+# Copy the example environment file
+cp server/.dev.vars.example server/.dev.vars
+```
+
+Edit `server/.dev.vars` with your actual values:
+
+```bash
+# Database
+DATABASE_URL=postgresql://username:password@host/database
+
+# Authentication
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=your-super-secret-key-here
+
+# Optional: GitHub OAuth (for social login)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+```
+
+### 3. Database Setup
+
+Set up your Neon PostgreSQL database:
+
+1. Create a [Neon](https://neon.tech) account
+2. Create a new project and database
+3. Copy the connection string to your `.dev.vars` file
+4. Run the database migrations:
+
+```bash
+cd server
+npm run better-auth-gen-schema  # Generate auth schema
+npx drizzle-kit generate        # Generate migrations
+npx drizzle-kit migrate         # Apply migrations
+```
+
+### 4. Development
+
+```bash
+# Run everything in development mode
 bun run dev
 
 # Or run individual parts
 bun run dev:shared  # Watch and compile shared types
-bun run dev:server  # Run the Hono backend
-bun run dev:client  # Run the Vite dev server for React
+bun run dev:server  # Run the Hono backend (localhost:3000)
+bun run dev:client  # Run the Vite dev server (localhost:5173)
 ```
 
-### Building
+Your development servers will be running at:
+- **Frontend**: http://localhost:5173
+- **Backend**: http://localhost:3000
+- **Auth API**: http://localhost:3000/api/*
 
-```bash
-# Build everything
-bun run build
+## Authentication Features
 
-# Or build individual parts
-bun run build:shared  # Build the shared types package
-bun run build:client  # Build the React frontend
-```
+This template includes a complete authentication system powered by Better Auth:
 
-### Deployment
+### Available Auth Endpoints
 
-Deplying each piece is very versatile and can be done numerous ways, and exploration into automating these will happen at a later date. Here are some references in the meantime.
+- `POST /api/sign-up` - User registration
+- `POST /api/sign-in` - User login
+- `POST /api/sign-out` - User logout
+- `GET /api/session` - Get current session
+- `POST /api/forgot-password` - Password reset
+- `POST /api/reset-password` - Reset password with token
 
-**Client**
-- [Orbiter](https://orbiter.host)
-- [GitHub Pages](https://vite.dev/guide/static-deploy.html#github-pages)
-- [Netlify](https://vite.dev/guide/static-deploy.html#netlify)
-- [Cloudflare Pages](https://vite.dev/guide/static-deploy.html#cloudflare-pages)
+### Database Schema
 
-**Server**
-- [Cloudflare Worker](https://gist.github.com/stevedylandev/4aa1fc569bcba46b7169193c0498d0b3)
-- [Bun](https://hono.dev/docs/getting-started/bun)
-- [Node.js](https://hono.dev/docs/getting-started/nodejs)
+The following tables are automatically created:
 
-## Type Sharing
+- **users** - User accounts and profiles
+- **sessions** - Active user sessions
+- **accounts** - Social provider accounts (OAuth)
+- **verification** - Email verification and password reset tokens
 
-Types are automatically shared between the client and server thanks to the shared package and TypeScript path aliases. You can import them in your code using:
+### Usage Example
 
 ```typescript
-import { ApiResponse } from '@shared/types';
+// Frontend authentication example
+const response = await fetch('/api/sign-up', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'securepassword',
+    name: 'John Doe'
+  })
+});
+
+const result = await response.json();
 ```
 
-## Learn More
+## Deployment
 
-- [Bun Documentation](https://bun.sh/docs)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://react.dev/learn)
+### Cloudflare Workers Deployment
+
+This template is pre-configured for Cloudflare Workers deployment:
+
+#### 1. Install Wrangler CLI
+
+```bash
+npm install -g wrangler
+```
+
+#### 2. Login to Cloudflare
+
+```bash
+wrangler login
+```
+
+#### 3. Set Production Environment Variables
+
+```bash
+# Set your production secrets
+echo "your-production-secret" | wrangler secret put BETTER_AUTH_SECRET
+echo "your-production-db-url" | wrangler secret put DATABASE_URL
+echo "https://your-domain.workers.dev" | wrangler secret put BETTER_AUTH_URL
+```
+
+#### 4. Deploy
+
+```bash
+cd server
+
+# Quick deploy
+npm run deploy
+
+# Full deploy (with secrets update)
+npm run deploy:full
+
+# View live logs
+npm run logs
+```
+
+### Deployment Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run deploy` | Build and deploy to Cloudflare Workers |
+| `npm run deploy:quick` | Deploy without building |
+| `npm run deploy:full` | Build, update secrets, and deploy |
+| `npm run deploy:secrets` | Update environment variables only |
+| `npm run logs` | View live deployment logs |
+| `npm run status` | Check deployment status |
+
+### Frontend Deployment
+
+Deploy your React frontend to any static hosting service:
+
+**Recommended Options:**
+- [Cloudflare Pages](https://pages.cloudflare.com)
+- [Vercel](https://vercel.com)
+- [Netlify](https://netlify.com)
+- [GitHub Pages](https://pages.github.com)
+
+```bash
+# Build the frontend
+cd client
+npm run build
+
+# Deploy the dist/ folder to your hosting service
+```
+
+## Development Workflow
+
+### 1. Making Changes
+
+```bash
+# Make your code changes
+git add .
+git commit -m "feat: add new feature"
+```
+
+### 2. Testing Locally
+
+```bash
+# Test the server
+cd server
+npm run dev
+
+# Test the client
+cd client
+npm run dev
+```
+
+### 3. Deploy to Production
+
+```bash
+# Deploy server
+cd server
+npm run deploy
+
+# Deploy client (example with Cloudflare Pages)
+cd client
+npm run build
+# Upload dist/ to your hosting service
+```
+
+## Database Management
+
+### Adding New Tables
+
+1. Modify the schema in `server/src/db/schema.ts`
+2. Generate migrations:
+   ```bash
+   cd server
+   npx drizzle-kit generate
+   npx drizzle-kit migrate
+   ```
+
+### Viewing Database
+
+```bash
+cd server
+npx drizzle-kit studio  # Opens database viewer in browser
+```
+
+## Customization
+
+### Adding Social Providers
+
+Edit `server/src/lib/better-auth/options.ts`:
+
+```typescript
+export const betterAuthOptions: BetterAuthOptions = {
+  appName: "Your App Name",
+  basePath: "/api",
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+  },
+};
+```
+
+### Custom API Routes
+
+Add new routes in `server/src/index.ts`:
+
+```typescript
+import { auth } from "./lib/better-auth";
+import { Hono } from "hono";
+
+export const app = new Hono()
+  .use(cors())
+  
+  // Your custom API routes
+  .get("/api/protected", async (c) => {
+    const session = await auth(c.env).api.getSession({
+      headers: c.req.headers
+    });
+    
+    if (!session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    
+    return c.json({ message: "Protected data", user: session.user });
+  });
+```
+
+## Environment Variables
+
+### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host/db` |
+| `BETTER_AUTH_SECRET` | Secret key for JWT signing | `your-32-char-secret-key` |
+| `BETTER_AUTH_URL` | Base URL of your application | `https://yourdomain.com` |
+
+### Optional Variables
+
+| Variable | Description |
+|----------|-------------|
+| `GITHUB_CLIENT_ID` | GitHub OAuth client ID |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Error:**
+- Verify your `DATABASE_URL` is correct
+- Ensure your Neon database is running
+- Check if migrations have been applied
+
+**Authentication Not Working:**
+- Verify `BETTER_AUTH_SECRET` is set
+- Check `BETTER_AUTH_URL` matches your domain
+- Ensure database schema is up to date
+
+**Deployment Fails:**
+- Run `wrangler login` to authenticate
+- Verify all secrets are set with `wrangler secret list`
+- Check build logs with `npm run logs`
+
+### Getting Help
+
+- [Better Auth Documentation](https://www.better-auth.com/docs)
 - [Hono Documentation](https://hono.dev/docs)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
+
+## Credits & Acknowledgments
+
+This template is built upon the fantastic work of:
+
+- **[@stevedylandev](https://github.com/stevedylandev)** - Creator of the original [bhvr](https://github.com/stevedylandev/bhvr) template
+- **[Better Auth](https://www.better-auth.com)** - Modern authentication library
+- **[Cloudflare Workers](https://workers.cloudflare.com)** - Serverless computing platform
+- **[Drizzle ORM](https://orm.drizzle.team)** - TypeScript ORM
+- **[Neon](https://neon.tech)** - Serverless PostgreSQL
+
+### What's Added to the Original BHVR
+
+This fork enhances the original bhvr template with:
+
+- ✅ **Complete Authentication System** with Better Auth
+- ✅ **Database Integration** with Drizzle ORM + PostgreSQL
+- ✅ **Cloudflare Workers Deployment** with Wrangler
+- ✅ **Production-Ready Configuration** 
+- ✅ **Database Migrations & Schema Management**
+- ✅ **Environment Variable Management**
+- ✅ **Deployment Scripts & CI/CD Ready**
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/new-feature`
+3. Make your changes and test thoroughly
+4. Commit your changes: `git commit -m "feat: add new feature"`
+5. Push to the branch: `git push origin feature/new-feature`
+6. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+### Original License
+
+This project is based on [bhvr](https://github.com/stevedylandev/bhvr) by Steve Dylan, also licensed under the MIT License.
